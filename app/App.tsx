@@ -7,11 +7,13 @@ import { colors } from './src/theme';
 import LoginScreen from './src/screens/LoginScreen';
 import ProfileSetupScreen from './src/screens/ProfileSetupScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import RoundScreen from './src/screens/RoundScreen';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [nickname, setNickname] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roundId, setRoundId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -29,7 +31,10 @@ export default function App() {
 
   useEffect(() => {
     if (session) loadProfile(session.user.id);
-    else setNickname(null);
+    else {
+      setNickname(null);
+      setRoundId(null);
+    }
   }, [session]);
 
   let screen;
@@ -43,8 +48,10 @@ export default function App() {
     screen = <LoginScreen />;
   } else if (!nickname) {
     screen = <ProfileSetupScreen userId={session.user.id} onDone={() => loadProfile(session.user.id)} />;
+  } else if (roundId) {
+    screen = <RoundScreen roundId={roundId} userId={session.user.id} onBack={() => setRoundId(null)} />;
   } else {
-    screen = <HomeScreen nickname={nickname} />;
+    screen = <HomeScreen userId={session.user.id} nickname={nickname} onOpenRound={setRoundId} />;
   }
 
   return (
